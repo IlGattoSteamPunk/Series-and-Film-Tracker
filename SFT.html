@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Series and Films Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Honk&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: rgb(255,0,0);
+            background: linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(0,80,255,1) 0%, rgba(0,247,255,1) 50%, rgba(0,33,103,1) 100%);
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-family: 'Honk', sans-serif;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 2px 2px #000;
+            margin-top: 20px; /* Aggiunta di un margine superiore per separare dal titolo */
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        input, button {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+        }
+        input {
+            background-color: #ffebee;
+        }
+        button {
+            background-color: #ff3366;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #e6004c;
+        }
+        .series-list {
+            max-width: 600px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .series-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .series-item button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .edit-button {
+            background-color: #ffd700;
+            color: #333;
+        }
+        .edit-button:hover {
+            background-color: #e6b800;
+        }
+        .update-button {
+            background-color: #3399ff;
+        }
+        .update-button:hover {
+            background-color: #0073e6;
+        }
+        .delete-button {
+            background-color: #ff3366;
+        }
+        .delete-button:hover {
+            background-color: #e6004c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Series and Films Tracker</h1>
+    <form id="seriesForm">
+        <input type="text" id="seriesName" placeholder="Series/Film Name" required>
+        <input type="text" id="currentPosition" placeholder="Current Position (e.g., S2E3)" required>
+        <input type="number" id="currentMinute" placeholder="Minute Mark" required>
+        <button type="submit">Add Series/Film</button>
+    </form>
+    <div class="series-list" id="seriesList"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const seriesForm = document.getElementById('seriesForm');
+            const seriesList = document.getElementById('seriesList');
+            let seriesData = JSON.parse(localStorage.getItem('seriesData')) || [];
+
+            function renderSeries() {
+                seriesList.innerHTML = '';
+                seriesData.forEach((series, index) => {
+                    const seriesItem = document.createElement('div');
+                    seriesItem.classList.add('series-item');
+                    seriesItem.innerHTML = `
+                        <span>${series.name} - ${series.position} | ${series.minute} min</span>
+                        <div>
+                            <button class="edit-button" onclick="editSeries(${index})">Edit</button>
+                            <button class="update-button" onclick="updateSeries(${index})">Update Position</button>
+                            <button class="delete-button" onclick="deleteSeries(${index})">Delete</button>
+                        </div>
+                    `;
+                    seriesList.appendChild(seriesItem);
+                });
+            }
+
+            window.editSeries = function(index) {
+                const newName = prompt('Enter new name:', seriesData[index].name);
+                if (newName) {
+                    seriesData[index].name = newName;
+                    localStorage.setItem('seriesData', JSON.stringify(seriesData));
+                    renderSeries();
+                }
+            }
+
+            window.updateSeries = function(index) {
+                const newPosition = prompt('Enter new position (e.g., S2E3):', seriesData[index].position);
+                const newMinute = prompt('Enter new minute mark:', seriesData[index].minute);
+                if (newPosition && newMinute) {
+                    seriesData[index].position = newPosition;
+                    seriesData[index].minute = parseInt(newMinute);
+                    localStorage.setItem('seriesData', JSON.stringify(seriesData));
+                    renderSeries();
+                }
+            }
+
+            window.deleteSeries = function(index) {
+                seriesData.splice(index, 1);
+                localStorage.setItem('seriesData', JSON.stringify(seriesData));
+                renderSeries();
+            }
+
+            seriesForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const seriesName = document.getElementById('seriesName').value;
+                const currentPosition = document.getElementById('currentPosition').value;
+                const currentMinute = document.getElementById('currentMinute').value;
+                seriesData.push({ name: seriesName, position: currentPosition, minute: parseInt(currentMinute) });
+                localStorage.setItem('seriesData', JSON.stringify(seriesData));
+                renderSeries();
+                seriesForm.reset();
+            });
+
+            renderSeries();
+        });
+    </script>
+</body>
+</html>
