@@ -8,7 +8,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Honk&display=swap');
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Honk', sans-serif;
             background: rgb(255,0,0);
             background: linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(0,80,255,1) 0%, rgba(0,247,255,1) 50%, rgba(0,33,103,1) 100%);
             margin: 0;
@@ -20,7 +20,6 @@
             font-size: 3rem;
             color: #fff;
             text-shadow: 2px 2px #000;
-            margin-top: 20px; /* Aggiunta di un margine superiore per separare dal titolo */
         }
         form {
             display: flex;
@@ -103,7 +102,7 @@
     <form id="seriesForm">
         <input type="text" id="seriesName" placeholder="Series/Film Name" required>
         <input type="text" id="currentPosition" placeholder="Current Position (e.g., S2E3)" required>
-        <input type="number" id="currentMinute" placeholder="Minute Mark" required>
+        <input type="text" id="currentMinute" placeholder="Minute Mark (e.g., 12:29)" required>
         <button type="submit">Add Series/Film</button>
     </form>
     <div class="series-list" id="seriesList"></div>
@@ -116,11 +115,12 @@
 
             function renderSeries() {
                 seriesList.innerHTML = '';
+                seriesData.sort((a, b) => a.name.localeCompare(b.name));
                 seriesData.forEach((series, index) => {
                     const seriesItem = document.createElement('div');
                     seriesItem.classList.add('series-item');
                     seriesItem.innerHTML = `
-                        <span>${series.name} - ${series.position} | ${series.minute} min</span>
+                        <span>${series.name} - ${series.position} @ ${series.minute} min</span>
                         <div>
                             <button class="edit-button" onclick="editSeries(${index})">Edit</button>
                             <button class="update-button" onclick="updateSeries(${index})">Update Position</button>
@@ -142,10 +142,10 @@
 
             window.updateSeries = function(index) {
                 const newPosition = prompt('Enter new position (e.g., S2E3):', seriesData[index].position);
-                const newMinute = prompt('Enter new minute mark:', seriesData[index].minute);
+                const newMinute = prompt('Enter new minute mark (e.g., 12:29):', seriesData[index].minute);
                 if (newPosition && newMinute) {
                     seriesData[index].position = newPosition;
-                    seriesData[index].minute = parseInt(newMinute);
+                    seriesData[index].minute = newMinute;
                     localStorage.setItem('seriesData', JSON.stringify(seriesData));
                     renderSeries();
                 }
@@ -162,7 +162,7 @@
                 const seriesName = document.getElementById('seriesName').value;
                 const currentPosition = document.getElementById('currentPosition').value;
                 const currentMinute = document.getElementById('currentMinute').value;
-                seriesData.push({ name: seriesName, position: currentPosition, minute: parseInt(currentMinute) });
+                seriesData.push({ name: seriesName, position: currentPosition, minute: currentMinute });
                 localStorage.setItem('seriesData', JSON.stringify(seriesData));
                 renderSeries();
                 seriesForm.reset();
