@@ -8,7 +8,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Honk&display=swap');
 
         body {
-            font-family: 'Honk', sans-serif;
+            font-family: 'Roboto', sans-serif;
             background: rgb(255,0,0);
             background: linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(0,80,255,1) 0%, rgba(0,247,255,1) 50%, rgba(0,33,103,1) 100%);
             margin: 0;
@@ -95,6 +95,16 @@
         .delete-button:hover {
             background-color: #e6004c;
         }
+        .clipboard-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .clipboard-buttons button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -106,11 +116,17 @@
         <button type="submit">Add Series/Film</button>
     </form>
     <div class="series-list" id="seriesList"></div>
+    <div class="clipboard-buttons">
+        <button id="copyToClipboard">Copy to Clipboard</button>
+        <button id="importFromClipboard">Import from Clipboard</button>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const seriesForm = document.getElementById('seriesForm');
             const seriesList = document.getElementById('seriesList');
+            const copyToClipboardBtn = document.getElementById('copyToClipboard');
+            const importFromClipboardBtn = document.getElementById('importFromClipboard');
             let seriesData = JSON.parse(localStorage.getItem('seriesData')) || [];
 
             function renderSeries() {
@@ -166,6 +182,31 @@
                 localStorage.setItem('seriesData', JSON.stringify(seriesData));
                 renderSeries();
                 seriesForm.reset();
+            });
+
+            copyToClipboardBtn.addEventListener('click', function () {
+                const seriesListText = seriesData.map(series => `${series.name}, ${series.position}, ${series.minute}`).join('\n');
+                navigator.clipboard.writeText(seriesListText).then(() => {
+                    alert('Series list copied to clipboard!');
+                }).catch(err => {
+                    alert('Failed to copy to clipboard.');
+                    console.error('Error:', err);
+                });
+            });
+
+            importFromClipboardBtn.addEventListener('click', function () {
+                navigator.clipboard.readText().then(text => {
+                    const importedData = text.split('\n').map(line => {
+                        const [name, position, minute] = line.split(', ');
+                        return { name, position, minute };
+                    });
+                    seriesData = seriesData.concat(importedData);
+                    localStorage.setItem('seriesData', JSON.stringify(seriesData));
+                    renderSeries();
+                }).catch(err => {
+                    alert('Failed to read from clipboard.');
+                    console.error('Error:', err);
+                });
             });
 
             renderSeries();
